@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skills checklist – M3W226703 Group Project</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #fff; --text: #1d2330; --muted: #667085;
+    --border: #d0d5dd; --row: #f9fafb; --accent: #2563eb; --accent-h: #1d4ed8;
+    --ok: #067647; --ok-bg: #ecfdf3; --err: #b42318; --err-bg: #fef3f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #181b22; --text: #e6e8ec; --muted: #98a2b3;
+      --border: #344054; --row: #1f232b; --accent: #3b82f6; --accent-h: #60a5fa;
+      --ok: #75e0a7; --ok-bg: #053321; --err: #fda29b; --err-bg: #55160c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 32px 16px;
+  }
+  .card {
+    max-width: 820px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; padding: 28px;
+  }
+  h1 { margin: 0; font-size: 1.6rem; }
+  .course { margin: 2px 0 12px; color: var(--muted); font-weight: 600; }
+  .intro { margin: 0 0 24px; color: var(--muted); }
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+  label.lbl { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .req { color: var(--err); }
+  input[type=text], input[type=email], input[type=date], textarea {
+    width: 100%; padding: 9px 12px; font: inherit; color: var(--text);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  textarea { min-height: 70px; resize: vertical; }
+  .top { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px; }
+
+  /* Skills grid */
+  .grid { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .r { display: grid; grid-template-columns: 1fr repeat(3, 110px); align-items: center; }
+  .r > * { padding: 8px 10px; }
+  .r:nth-child(even) { background: var(--row); }
+  .r + .r { border-top: 1px solid var(--border); }
+  .head { font-weight: 700; font-size: .85rem; background: var(--row); }
+  .head > div:not(:first-child) { text-align: center; }
+  .opt { display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
+  .opt input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+  .opt span { display: none; font-size: .85rem; }
+  .other-input { padding: 6px 8px !important; }
+  @media (max-width: 640px) {
+    .top { grid-template-columns: 1fr; }
+    .head { display: none !important; }
+    .r { grid-template-columns: 1fr; }
+    .r > .skill { font-weight: 600; padding-bottom: 2px; }
+    .r > .opt { justify-content: flex-start; padding: 4px 10px; }
+    .r > .opt:last-child { padding-bottom: 10px; }
+    .opt span { display: inline; }
+  }
+
+  .own { display: grid; grid-template-columns: 220px 1fr; gap: 10px 14px; align-items: start; }
+  .own label { font-weight: 600; padding-top: 8px; }
+  @media (max-width: 640px) { .own { grid-template-columns: 1fr; } .own label { padding-top: 0; } }
+
+  .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+  button {
+    font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-h); }
+  button:disabled { opacity: .6; cursor: wait; }
+  .steps { background: var(--row); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 14px 18px; margin: 0 0 24px; }
+  .steps h3 { margin: 0 0 6px; font-size: 1rem; }
+  .steps ol { margin: 0; padding-left: 20px; }
+  .steps li { margin: 4px 0; }
+  .steps p { margin: 8px 0 0; }
+  code { font-size: .9em; background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+  #status a { color: inherit; font-weight: 600; }
+  .hp { position: absolute; left: -9999px; }
+  #status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; display: none; }
+  #status.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  #status.err { display: block; background: var(--err-bg); color: var(--err); }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card { border: 0; }
+    .buttons, #status { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Skills checklist</h1>
+  <p class="course">M3W226703 Group Project</p>
+  <p class="intro">Tick one box per line. Leave a line blank if it does not apply to this project.
+    Add anything missing on the "Other" rows.</p>
+
+  <section class="steps" id="steps">
+    <h3>How to submit</h3>
+    <ol>
+      <li>Type your <strong>first and last name</strong> and fill in the checklist below.</li>
+      <li>Click <strong>Save as CSV</strong> at the bottom. A file named after you
+        (e.g. <code>Jan_Kowalski.csv</code>) is saved to your <strong>Downloads</strong> folder.
+        Do not rename it.</li>
+      <li>Open <strong>Microsoft Teams</strong> → go to <strong id="teamsWhere">the project team</strong> →
+        <strong>Files</strong> tab.</li>
+      <li>Click <strong>Upload → Files</strong>, pick your CSV file from Downloads and upload it.
+        (You can also drag the file into the Files tab.)</li>
+      <li>Done. If you need to change your answers, fill in the form again, save, and upload the new
+        file – choose <strong>Replace</strong> when Teams asks.</li>
+    </ol>
+    <p id="teamsLinkWrap" hidden><a id="teamsLink" target="_blank" rel="noopener">Open the Teams folder ↗</a></p>
+  </section>
+
+  <form id="form" novalidate>
+    <div class="top">
+      <div>
+        <label class="lbl" for="name">First and last name <span class="req">*</span></label>
+        <input type="text" id="name" required autocomplete="name" placeholder="e.g. Jan Kowalski">
+      </div>
+      <div>
+        <label class="lbl" for="email">Email</label>
+        <input type="email" id="email" autocomplete="email">
+      </div>
+      <div>
+        <label class="lbl" for="date">Date</label>
+        <input type="date" id="date">
+      </div>
+    </div>
+
+    <h2>Hard skills</h2>
+    <div class="grid" id="hard"></div>
+
+    <h2>Soft skills</h2>
+    <div class="grid" id="soft"></div>
+
+    <h2>In your own words</h2>
+    <div class="own">
+      <label for="good">Two things I am good at</label>
+      <textarea id="good"></textarea>
+      <label for="hardfor">Two things I find hard</label>
+      <textarea id="hardfor"></textarea>
+      <label for="takeon">What I want to take on in this project</label>
+      <textarea id="takeon"></textarea>
+    </div>
+
+    <div class="buttons">
+      <button type="submit" class="primary" id="csvBtn">Save as CSV</button>
+      <button type="button" id="printBtn">Print / Save as PDF</button>
+    </div>
+    <div id="status" role="status"></div>
+  </form>
+</main>
+
+<script>
+  // ====== SETTINGS ======
+  // Where in Teams people should upload their file (shown in the instructions).
+  const TEAMS_LOCATION = "the project team";   // e.g. "M3W226703 Group Project → General"
+  // Optional: link to the Teams channel / Files folder ("Copy link" in Teams). Leave "" to hide.
+  const TEAMS_URL = "";
+  // ======================
+
+  const LEVELS = ["I can do this", "I need help with this", "I want to learn this"];
+
+  const HARD = [
+    "Python", "Pandas and data analysis", "SQL and databases",
+    "Another language (Java, C#, C++)", "HTML and CSS", "JavaScript or a front end framework",
+    "Git and GitHub", "Command line and Linux", "Working with APIs", "Testing and debugging",
+    "Data visualisation and charts", "UML and design diagrams", "Requirements gathering",
+    "UI and UX design", "Cloud hosting and deployment", "Spreadsheets (Excel, Google Sheets)",
+    "Technical writing and documentation"
+  ];
+  const SOFT = [
+    "Speaking up in meetings", "Writing clear messages to the team", "Presenting to an audience",
+    "Listening to other people", "Giving feedback on work by others", "Taking feedback on my own work",
+    "Planning and time management", "Meeting deadlines", "Chairing a meeting",
+    "Taking notes and sharing them", "Dealing with disagreement in the team",
+    "Helping someone who is stuck", "Asking for help early", "Working under time pressure",
+    "Taking the lead on a task", "Adapting when the plan changes"
+  ];
+  const OTHER_ROWS = 2;
+
+  function buildGrid(el, prefix, skills) {
+    let html = '<div class="r head"><div>Skill</div>' +
+      LEVELS.map(l => `<div>${l}</div>`).join("") + '</div>';
+    const rows = skills.map(s => ({ label: s, other: false }));
+    for (let i = 0; i < OTHER_ROWS; i++) rows.push({ label: "Other", other: true });
+    rows.forEach((row, i) => {
+      const id = `${prefix}${i}`;
+      const skillCell = row.other
+        ? `<div class="skill"><input type="text" class="other-input" data-other="${id}" placeholder="Other: type a skill"></div>`
+        : `<div class="skill">${row.label}</div>`;
+      html += `<div class="r" data-row="${id}" data-label="${row.label}">${skillCell}` +
+        LEVELS.map((l, j) =>
+          `<label class="opt" title="${l}"><input type="checkbox" name="${id}" value="${l}" aria-label="${row.label}: ${l}"><span>${l}</span></label>`
+        ).join("") + '</div>';
+    });
+    el.innerHTML = html;
+  }
+  buildGrid(document.getElementById("hard"), "h", HARD);
+  buildGrid(document.getElementById("soft"), "s", SOFT);
+
+  // One box per line: ticking one unticks the others (click again to clear the line)
+  document.addEventListener("change", e => {
+    const t = e.target;
+    if (t.type !== "checkbox" || !t.checked) return;
+    document.querySelectorAll(`input[type=checkbox][name="${t.name}"]`).forEach(cb => {
+      if (cb !== t) cb.checked = false;
+    });
+  });
+
+  document.getElementById("date").valueAsDate = new Date();
+
+  const form = document.getElementById("form");
+  const statusEl = document.getElementById("status");
+  const val = id => document.getElementById(id).value.trim();
+
+  // Teams instructions from settings
+  document.getElementById("teamsWhere").textContent = TEAMS_LOCATION;
+  if (TEAMS_URL) {
+    document.getElementById("teamsLink").href = TEAMS_URL;
+    document.getElementById("teamsLinkWrap").hidden = false;
+  }
+
+  function showStatus(msg, type) { statusEl.innerHTML = msg; statusEl.className = type; }
+
+  // Returns [{section, skill, answer}] for every row (answer "" if left blank)
+  function skillAnswers() {
+    const out = [];
+    [["Hard", "hard"], ["Soft", "soft"]].forEach(([section, gridId]) => {
+      document.querySelectorAll(`#${gridId} .r[data-row]`).forEach(r => {
+        let skill = r.dataset.label;
+        const otherInput = r.querySelector("[data-other]");
+        if (otherInput) skill = otherInput.value.trim() ? "Other: " + otherInput.value.trim() : "";
+        const checked = r.querySelector("input[type=checkbox]:checked");
+        const answer = checked ? checked.value : "";
+        if (otherInput && !skill && !answer) return; // empty "Other" row
+        out.push({ section, skill: skill || "Other (unnamed)", answer });
+      });
+    });
+    return out;
+  }
+
+  function validate() {
+    const name = document.getElementById("name");
+    if (val("name").split(/\s+/).filter(Boolean).length < 2) {
+      showStatus("Please enter your <strong>first and last name</strong> – it is used as the file name.", "err");
+      name.focus();
+      return false;
+    }
+    const email = document.getElementById("email");
+    if (email.value && !email.checkValidity()) {
+      showStatus("Please enter a valid email address (or leave it blank).", "err");
+      email.focus();
+      return false;
+    }
+    return true;
+  }
+
+  // "Jan Kowalski" -> "Jan_Kowalski.csv", "Łukasz Żółć" -> "Lukasz_Zolc.csv"
+  // (accents converted to plain letters so every browser keeps the name)
+  function fileName() {
+    const clean = val("name")
+      .replace(/ł/g, "l").replace(/Ł/g, "L")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^A-Za-z0-9 _.-]+/g, "")
+      .trim()
+      .replace(/\s+/g, "_");
+    return (clean || "checklist") + ".csv";
+  }
+
+  // Save as CSV: one row per person, one column per skill (easy to merge the whole team in Excel)
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    if (!validate()) return;
+    const cols = [["Name", val("name")], ["Email", val("email")], ["Date", val("date")]];
+    skillAnswers().forEach(a => cols.push([`[${a.section}] ${a.skill}`, a.answer]));
+    cols.push(["Two things I am good at", val("good")]);
+    cols.push(["Two things I find hard", val("hardfor")]);
+    cols.push(["What I want to take on in this project", val("takeon")]);
+
+    const esc = s => '"' + String(s).replace(/"/g, '""') + '"';
+    const csv = "\uFEFF" + cols.map(c => esc(c[0])).join(",") + "\r\n" +
+                cols.map(c => esc(c[1])).join(",") + "\r\n";
+    const name = fileName();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+
+    const esch = t => t.replace(/[&<>]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]));
+    showStatus(`Saved <strong>${esch(name)}</strong> to your Downloads folder.<br>
+      Now upload it to Teams: <strong>${esch(TEAMS_LOCATION)}</strong> → <strong>Files</strong> → <strong>Upload → Files</strong>.` +
+      (TEAMS_URL ? ` <a href="${TEAMS_URL}" target="_blank" rel="noopener">Open the Teams folder ↗</a>` : ""), "ok");
+  });
+
+  document.getElementById("printBtn").addEventListener("click", () => window.print());
+</script>
+</body>
+</html>

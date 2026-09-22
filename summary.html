@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team skills summary – M3W226703 Group Project</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #fff; --text: #1d2330; --muted: #667085;
+    --border: #d0d5dd; --row: #f9fafb; --accent: #2563eb; --accent-h: #1d4ed8;
+    --can: #067647; --can-bg: #dcfae6;
+    --help: #b54708; --help-bg: #fef0c7;
+    --learn: #175cd3; --learn-bg: #d1e9ff;
+    --gap: #b42318; --gap-bg: #fef3f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #181b22; --text: #e6e8ec; --muted: #98a2b3;
+      --border: #344054; --row: #1f232b; --accent: #3b82f6; --accent-h: #60a5fa;
+      --can: #75e0a7; --can-bg: #053321;
+      --help: #fec84b; --help-bg: #4e1d09;
+      --learn: #84caff; --learn-bg: #102a56;
+      --gap: #fda29b; --gap-bg: #55160c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 32px 16px;
+  }
+  .card {
+    max-width: 1100px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; padding: 28px;
+  }
+  h1 { margin: 0; font-size: 1.6rem; }
+  .course { margin: 2px 0 16px; color: var(--muted); font-weight: 600; }
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+  .muted { color: var(--muted); }
+
+  .drop {
+    display: block; border: 2px dashed var(--border); border-radius: 10px; padding: 28px 16px; text-align: center;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .drop.over { border-color: var(--accent); background: var(--row); }
+  .drop strong { color: var(--accent); }
+  .drop input { display: none; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+  .tile { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .tile .n { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+  .tile .l { color: var(--muted); font-size: .85rem; }
+  .tile.gap .n { color: var(--gap); }
+  @media (max-width: 700px) { .tiles { grid-template-columns: 1fr 1fr; } }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
+  button, select {
+    font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-h); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 8px 10px; text-align: left; vertical-align: top; border-top: 1px solid var(--border); }
+  thead th { background: var(--row); font-size: .85rem; border-top: 0; white-space: nowrap; }
+  tbody tr:nth-child(even) { background: var(--row); }
+  td.skill { font-weight: 600; min-width: 180px; width: 22%; }
+  .nonames { color: var(--muted); font-size: .8rem; }
+  td.cnt { width: 19.5%; }
+  .num { font-weight: 700; display: inline-block; min-width: 1.6em; }
+  .chip {
+    display: inline-block; font-size: .8rem; padding: 1px 8px; border-radius: 999px; margin: 2px 3px 2px 0;
+    white-space: nowrap;
+  }
+  .c-can { background: var(--can-bg); color: var(--can); }
+  .c-help { background: var(--help-bg); color: var(--help); }
+  .c-learn { background: var(--learn-bg); color: var(--learn); }
+  .c-none { background: var(--row); color: var(--muted); border: 1px solid var(--border); }
+  .flag { font-size: .75rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+  .flag.gap { background: var(--gap-bg); color: var(--gap); }
+  tr.is-gap td.skill { color: var(--gap); }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .85rem; margin: 6px 0 10px; }
+
+  .people td { white-space: pre-line; }
+  .people td:first-child { font-weight: 600; white-space: nowrap; }
+  #empty { margin-top: 20px; }
+  #results[hidden] { display: none; }
+
+  @media print {
+    body { background: #fff; padding: 0; font-size: 11px; }
+    .card { border: 0; padding: 0; max-width: none; }
+    .no-print { display: none !important; }
+    .tablewrap { overflow: visible; }
+    tr { break-inside: avoid; }
+    .chip, .flag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Team skills summary</h1>
+  <p class="course">M3W226703 Group Project</p>
+
+  <section class="no-print">
+    <p class="muted">Download all the <code>.csv</code> files from the Teams <strong>Files</strong> tab
+      (select them → <strong>Download</strong>), then drop them below. The files are read only in your
+      browser – nothing is uploaded anywhere.</p>
+    <label class="drop" id="drop">
+      <input type="file" id="files" accept=".csv,text/csv" multiple>
+      <div><strong>Choose CSV files</strong> or drag them here</div>
+      <div class="muted" id="loaded">No files loaded yet</div>
+    </label>
+  </section>
+
+  <p id="empty" class="muted">Load the team's CSV files to see the summary.</p>
+
+  <div id="results" hidden>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="toolbar no-print">
+      <label>Show:
+        <select id="filter">
+          <option value="all">All skills</option>
+          <option value="gap">Gaps only (nobody can do it)</option>
+          <option value="help">Someone needs help</option>
+        </select>
+      </label>
+      <button class="primary" id="printBtn">Print / Save as PDF</button>
+      <button id="exportBtn">Download combined CSV</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <h2>Hard skills</h2>
+    <div class="legend">
+      <span><span class="chip c-can">I can do this</span></span>
+      <span><span class="chip c-help">I need help with this</span></span>
+      <span><span class="chip c-learn">I want to learn this</span></span>
+      <span><span class="chip c-none">No answer</span></span>
+      <span><span class="flag gap">GAP</span> nobody in the team can do it yet</span>
+    </div>
+    <div class="tablewrap"><table id="hardTable"></table></div>
+
+    <h2>Soft skills</h2>
+    <div class="tablewrap"><table id="softTable"></table></div>
+
+    <h2>In their own words</h2>
+    <div class="tablewrap"><table class="people" id="peopleTable"></table></div>
+  </div>
+</main>
+
+<script>
+  const LEVELS = ["I can do this", "I need help with this", "I want to learn this"];
+  const LEVEL_CLASS = ["c-can", "c-help", "c-learn"];
+  const TEXT_COLS = ["Two things I am good at", "Two things I find hard", "What I want to take on in this project"];
+
+  // people keyed by lower-case name, so a re-uploaded file replaces the old one
+  let people = new Map();
+
+  // --- CSV parsing (quoted fields, commas, newlines inside quotes, BOM) ---
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, "");
+    const rows = []; let row = []; let field = ""; let q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(field); rows.push(row); row = []; field = "";
+      } else field += c;
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(v => v.trim() !== ""));
+  }
+
+  async function loadFiles(fileList) {
+    const errors = [];
+    for (const f of Array.from(fileList)) {
+      try {
+        const rows = parseCSV(await f.text());
+        if (rows.length < 2 || rows[0][0] !== "Name") throw new Error("not a skills checklist file");
+        const header = rows[0];
+        // one data row per file (but accept more, e.g. a combined CSV)
+        for (const r of rows.slice(1)) {
+          const rec = {};
+          header.forEach((h, i) => rec[h] = (r[i] || "").trim());
+          if (!rec.Name) continue;
+          rec._file = f.name;
+          people.set(rec.Name.toLowerCase(), rec);
+        }
+      } catch (e) {
+        errors.push(`${f.name}: ${e.message}`);
+      }
+    }
+    document.getElementById("loaded").textContent =
+      `${people.size} ${people.size === 1 ? "person" : "people"} loaded` +
+      (errors.length ? ` · skipped: ${errors.join("; ")}` : "");
+    render();
+  }
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function skillColumns(section) {
+    // all skill columns for a section, in the order they first appear
+    const cols = [];
+    for (const p of people.values())
+      for (const k of Object.keys(p))
+        if (k.startsWith(`[${section}] `) && !cols.includes(k)) cols.push(k);
+    // "Other" rows at the end
+    return cols.filter(c => !c.includes("] Other")).concat(cols.filter(c => c.includes("] Other")));
+  }
+
+  function stats(col) {
+    const s = { names: [[], [], []], none: [] };
+    for (const p of people.values()) {
+      const idx = LEVELS.indexOf(p[col]);
+      if (idx >= 0) s.names[idx].push(p.Name); else if (!col.includes("] Other")) s.none.push(p.Name);
+    }
+    return s;
+  }
+
+  function cell(names, cls) {
+    if (cls === "c-none")
+      return `<td class="cnt"><span class="num">${names.length}</span> <span class="nonames">${esc(names.join(", "))}</span></td>`;
+    return `<td class="cnt"><span class="num">${names.length}</span>` +
+      names.map(n => `<span class="chip ${cls}">${esc(n)}</span>`).join("") + "</td>";
+  }
+
+  function renderSection(section, tableId, filter) {
+    const cols = skillColumns(section);
+    let html = `<thead><tr><th>Skill</th>${LEVELS.map(l => `<th>${l}</th>`).join("")}<th>No answer</th></tr></thead><tbody>`;
+    let shown = 0;
+    for (const col of cols) {
+      const s = stats(col);
+      const gap = s.names[0].length === 0;
+      if (filter === "gap" && !gap) continue;
+      if (filter === "help" && s.names[1].length === 0) continue;
+      shown++;
+      html += `<tr class="${gap ? "is-gap" : ""}"><td class="skill">${esc(col.replace(/^\[\w+\] /, ""))}` +
+        (gap ? '<span class="flag gap">GAP</span>' : "") + "</td>" +
+        s.names.map((n, i) => cell(n, LEVEL_CLASS[i])).join("") +
+        cell(s.none, "c-none") + "</tr>";
+    }
+    if (!shown) html += `<tr><td colspan="5" class="muted">Nothing to show for this filter.</td></tr>`;
+    document.getElementById(tableId).innerHTML = html + "</tbody>";
+  }
+
+  function render() {
+    const has = people.size > 0;
+    document.getElementById("results").hidden = !has;
+    document.getElementById("empty").hidden = has;
+    if (!has) return;
+
+    const filter = document.getElementById("filter").value;
+    renderSection("Hard", "hardTable", filter);
+    renderSection("Soft", "softTable", filter);
+
+    // tiles
+    const allCols = skillColumns("Hard").concat(skillColumns("Soft"));
+    const gaps = allCols.filter(c => stats(c).names[0].length === 0).length;
+    const helpNeeded = allCols.filter(c => stats(c).names[1].length > 0).length;
+    const pairable = allCols.filter(c => { const s = stats(c); return s.names[0].length && s.names[1].length; }).length;
+    document.getElementById("tiles").innerHTML = [
+      [people.size, "people"],
+      [gaps, "skills nobody can do yet", "gap"],
+      [helpNeeded, "skills where someone needs help"],
+      [pairable, "of those have someone who can help"]
+    ].map(([n, l, cls]) => `<div class="tile ${cls || ""}"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+
+    // free text
+    const sorted = [...people.values()].sort((a, b) => a.Name.localeCompare(b.Name));
+    document.getElementById("peopleTable").innerHTML =
+      `<thead><tr><th>Name</th>${TEXT_COLS.map(t => `<th>${t}</th>`).join("")}</tr></thead><tbody>` +
+      sorted.map(p => `<tr><td>${esc(p.Name)}${p.Email ? `<br><span class="muted">${esc(p.Email)}</span>` : ""}</td>` +
+        TEXT_COLS.map(t => `<td>${esc(p[t] || "")}</td>`).join("") + "</tr>").join("") + "</tbody>";
+  }
+
+  // combined CSV: one row per person, all columns
+  function exportCSV() {
+    const cols = ["Name", "Email", "Date", ...skillColumns("Hard"), ...skillColumns("Soft"), ...TEXT_COLS];
+    const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+    const lines = [cols.map(q).join(",")];
+    [...people.values()].sort((a, b) => a.Name.localeCompare(b.Name))
+      .forEach(p => lines.push(cols.map(c => q(p[c])).join(",")));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" }));
+    a.download = "team-skills-summary.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // --- events ---
+  const drop = document.getElementById("drop");
+  document.getElementById("files").addEventListener("change", e => { const list = Array.from(e.target.files); e.target.value = ""; loadFiles(list); });
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => loadFiles(e.dataTransfer.files));
+  document.getElementById("filter").addEventListener("change", render);
+  document.getElementById("printBtn").addEventListener("click", () => window.print());
+  document.getElementById("exportBtn").addEventListener("click", exportCSV);
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    people = new Map();
+    document.getElementById("loaded").textContent = "No files loaded yet";
+    render();
+  });
+</script>
+</body>
+</html>
