@@ -83,6 +83,12 @@
   .steps p { margin: 8px 0 0; }
   code { font-size: .9em; background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
   #status a { color: inherit; font-weight: 600; }
+  .update { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    border: 1px dashed var(--border); border-radius: 8px; padding: 12px 16px; margin: 0 0 24px; }
+  .btnlike { font-weight: 600; padding: 8px 16px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+    border: 1px solid var(--accent); color: var(--accent); background: var(--card); }
+  .btnlike:hover { background: var(--row); }
+  .sec-note { margin: -4px 0 10px; color: var(--muted); font-size: .9rem; }
   .hp { position: absolute; left: -9999px; }
   #status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; display: none; }
   #status.ok { display: block; background: var(--ok-bg); color: var(--ok); }
@@ -91,7 +97,7 @@
   @media print {
     body { background: #fff; padding: 0; }
     .card { border: 0; }
-    .buttons, #status { display: none !important; }
+    .buttons, #status, .steps, .update { display: none !important; }
   }
 </style>
 </head>
@@ -113,10 +119,20 @@
         <strong>Files</strong> tab.</li>
       <li>Click <strong>Upload → Files</strong>, pick your CSV file from Downloads and upload it.
         (You can also drag the file into the Files tab.)</li>
-      <li>Done. If you need to change your answers, fill in the form again, save, and upload the new
-        file – choose <strong>Replace</strong> when Teams asks.</li>
+      <li>Done. To change your answers later: open this page, click <strong>Load my CSV</strong>
+        (below), pick your file, update it, save again and upload – choose <strong>Replace</strong>
+        when Teams asks.</li>
     </ol>
     <p id="teamsLinkWrap" hidden><a id="teamsLink" target="_blank" rel="noopener">Open the Teams folder ↗</a></p>
+  </section>
+
+  <section class="update" id="update">
+    <div>
+      <strong>Already filled it in?</strong> Load your saved CSV to update your answers –
+      then save and upload it again (choose <strong>Replace</strong> in Teams).
+    </div>
+    <label class="btnlike" for="loadFile">Load my CSV</label>
+    <input type="file" id="loadFile" accept=".csv,text/csv" hidden>
   </section>
 
   <form id="form" novalidate>
@@ -135,11 +151,7 @@
       </div>
     </div>
 
-    <h2>Hard skills</h2>
-    <div class="grid" id="hard"></div>
-
-    <h2>Soft skills</h2>
-    <div class="grid" id="soft"></div>
+    <div id="sections"></div>
 
     <h2>In your own words</h2>
     <div class="own">
@@ -169,43 +181,65 @@
 
   const LEVELS = ["I can do this", "I need help with this", "I want to learn this"];
 
-  const HARD = [
-    "Python", "Pandas and data analysis", "SQL and databases",
-    "Another language (Java, C#, C++)", "HTML and CSS", "JavaScript or a front end framework",
-    "Git and GitHub", "Command line and Linux", "Working with APIs", "Testing and debugging",
-    "Data visualisation and charts", "UML and design diagrams", "Requirements gathering",
-    "UI and UX design", "Cloud hosting and deployment", "Spreadsheets (Excel, Google Sheets)",
-    "Technical writing and documentation"
+  // Sections of the checklist. `key` is used in the CSV column names ("[Key] Skill"),
+  // so don't change the keys once people have submitted – only the titles and skills.
+  const SECTIONS = [
+    { key: "Hard", title: "Hard skills", other: 2, skills: [
+      "Python", "Pandas and data analysis", "SQL and databases",
+      "Another language (Java, C#, C++)", "HTML and CSS", "JavaScript or a front end framework",
+      "Git and GitHub", "Command line and Linux", "Working with APIs", "Testing and debugging",
+      "Data visualisation and charts", "UML and design diagrams", "Requirements gathering",
+      "UI and UX design", "Cloud hosting and deployment", "Spreadsheets (Excel, Google Sheets)",
+      "Technical writing and documentation"
+    ]},
+    { key: "Git", title: "Git and GitHub teamwork", other: 1, skills: [
+      "Commit, push and pull", "Branches and merging", "Resolving merge conflicts",
+      "Pull requests and code review", "GitHub Issues and Projects (task board)",
+      "GitHub Actions (CI/CD)", "GitHub Pages"
+    ]},
+    { key: "Frontend", title: "Front end", other: 1, skills: [
+      "Responsive layout (Flexbox, Grid)", "JavaScript (DOM, events, fetch)", "TypeScript",
+      "Forms and validation", "Accessibility (a11y)", "Figma, wireframes and prototypes"
+    ]},
+    { key: "Frameworks", title: "Frameworks and tools", note: "Tick only the ones that matter for this project.", other: 2, skills: [
+      "React", "Vue, Angular or Svelte", "Next.js", "Tailwind CSS or Bootstrap",
+      "Node.js and Express", "Flask, Django or FastAPI", "ASP.NET / .NET", "Spring Boot (Java)",
+      "PostgreSQL, MySQL or SQLite", "MongoDB or other NoSQL", "Firebase or Supabase",
+      "Docker", "Jupyter notebooks", "NumPy and scikit-learn", "Streamlit or Power BI"
+    ]},
+    { key: "Soft", title: "Soft skills", other: 2, skills: [
+      "Speaking up in meetings", "Writing clear messages to the team", "Presenting to an audience",
+      "Listening to other people", "Giving feedback on work by others", "Taking feedback on my own work",
+      "Planning and time management", "Meeting deadlines", "Chairing a meeting",
+      "Taking notes and sharing them", "Dealing with disagreement in the team",
+      "Helping someone who is stuck", "Asking for help early", "Working under time pressure",
+      "Taking the lead on a task", "Adapting when the plan changes"
+    ]}
   ];
-  const SOFT = [
-    "Speaking up in meetings", "Writing clear messages to the team", "Presenting to an audience",
-    "Listening to other people", "Giving feedback on work by others", "Taking feedback on my own work",
-    "Planning and time management", "Meeting deadlines", "Chairing a meeting",
-    "Taking notes and sharing them", "Dealing with disagreement in the team",
-    "Helping someone who is stuck", "Asking for help early", "Working under time pressure",
-    "Taking the lead on a task", "Adapting when the plan changes"
-  ];
-  const OTHER_ROWS = 2;
 
-  function buildGrid(el, prefix, skills) {
+  const escH = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function buildGrid(sec) {
     let html = '<div class="r head"><div>Skill</div>' +
       LEVELS.map(l => `<div>${l}</div>`).join("") + '</div>';
-    const rows = skills.map(s => ({ label: s, other: false }));
-    for (let i = 0; i < OTHER_ROWS; i++) rows.push({ label: "Other", other: true });
+    const rows = sec.skills.map(s => ({ label: s, other: false }));
+    for (let i = 0; i < sec.other; i++) rows.push({ label: "Other", other: true });
     rows.forEach((row, i) => {
-      const id = `${prefix}${i}`;
+      const id = `${sec.key}_${i}`;
       const skillCell = row.other
         ? `<div class="skill"><input type="text" class="other-input" data-other="${id}" placeholder="Other: type a skill"></div>`
-        : `<div class="skill">${row.label}</div>`;
-      html += `<div class="r" data-row="${id}" data-label="${row.label}">${skillCell}` +
-        LEVELS.map((l, j) =>
-          `<label class="opt" title="${l}"><input type="checkbox" name="${id}" value="${l}" aria-label="${row.label}: ${l}"><span>${l}</span></label>`
+        : `<div class="skill">${escH(row.label)}</div>`;
+      html += `<div class="r" data-row="${id}" data-label="${escH(row.label)}">${skillCell}` +
+        LEVELS.map(l =>
+          `<label class="opt" title="${l}"><input type="checkbox" name="${id}" value="${l}" aria-label="${escH(row.label)}: ${l}"><span>${l}</span></label>`
         ).join("") + '</div>';
     });
-    el.innerHTML = html;
+    return html;
   }
-  buildGrid(document.getElementById("hard"), "h", HARD);
-  buildGrid(document.getElementById("soft"), "s", SOFT);
+  document.getElementById("sections").innerHTML = SECTIONS.map(sec =>
+    `<h2>${escH(sec.title)}</h2>` + (sec.note ? `<p class="sec-note">${escH(sec.note)}</p>` : "") +
+    `<div class="grid" data-section="${sec.key}">${buildGrid(sec)}</div>`
+  ).join("");
 
   // One box per line: ticking one unticks the others (click again to clear the line)
   document.addEventListener("change", e => {
@@ -234,8 +268,8 @@
   // Returns [{section, skill, answer}] for every row (answer "" if left blank)
   function skillAnswers() {
     const out = [];
-    [["Hard", "hard"], ["Soft", "soft"]].forEach(([section, gridId]) => {
-      document.querySelectorAll(`#${gridId} .r[data-row]`).forEach(r => {
+    SECTIONS.forEach(({ key: section }) => {
+      document.querySelectorAll(`.grid[data-section="${section}"] .r[data-row]`).forEach(r => {
         let skill = r.dataset.label;
         const otherInput = r.querySelector("[data-other]");
         if (otherInput) skill = otherInput.value.trim() ? "Other: " + otherInput.value.trim() : "";
@@ -302,6 +336,79 @@
     showStatus(`Saved <strong>${esch(name)}</strong> to your Downloads folder.<br>
       Now upload it to Teams: <strong>${esch(TEAMS_LOCATION)}</strong> → <strong>Files</strong> → <strong>Upload → Files</strong>.` +
       (TEAMS_URL ? ` <a href="${TEAMS_URL}" target="_blank" rel="noopener">Open the Teams folder ↗</a>` : ""), "ok");
+  });
+
+  // --- Load a previously saved CSV to update it ---
+  function parseCSV(text) {
+    text = text.replace(/^\uFEFF/, "");
+    const rows = []; let row = []; let field = ""; let q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(field); rows.push(row); row = []; field = "";
+      } else field += c;
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(v => v.trim() !== ""));
+  }
+
+  function fillFrom(rec) {
+    form.reset();
+    document.querySelectorAll(".grid input[type=checkbox]").forEach(cb => cb.checked = false);
+    const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v; };
+    set("name", rec["Name"]); set("email", rec["Email"]);
+    set("good", rec["Two things I am good at"]);
+    set("hardfor", rec["Two things I find hard"]);
+    set("takeon", rec["What I want to take on in this project"]);
+    document.getElementById("date").valueAsDate = new Date();   // date of this update
+
+    let missing = 0;
+    for (const [col, answer] of Object.entries(rec)) {
+      const m = col.match(/^\[(\w+)\] (.*)$/);
+      if (!m) continue;
+      const [, section, skill] = m;
+      const grid = document.querySelector(`.grid[data-section="${section}"]`);
+      if (!grid) { if (answer) missing++; continue; }
+      let row;
+      if (skill.startsWith("Other")) {
+        const text = skill.replace(/^Other(: | \(unnamed\))?/, "");
+        const free = [...grid.querySelectorAll("[data-other]")].find(i => !i.value);
+        if (!free) { if (answer) missing++; continue; }
+        free.value = text;
+        row = free.closest(".r");
+      } else {
+        row = [...grid.querySelectorAll(".r[data-row]")].find(r => r.dataset.label === skill);
+      }
+      if (!row) { if (answer) missing++; continue; }
+      const cb = [...row.querySelectorAll("input[type=checkbox]")].find(c => c.value === answer);
+      if (cb) cb.checked = true;
+    }
+    return missing;
+  }
+
+  document.getElementById("loadFile").addEventListener("change", async e => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    try {
+      const rows = parseCSV(await f.text());
+      if (rows.length < 2 || rows[0][0] !== "Name") throw new Error("this is not a skills checklist CSV");
+      const rec = {};
+      rows[0].forEach((h, i) => rec[h] = (rows[1][i] || "").trim());
+      const missing = fillFrom(rec);
+      showStatus(`Loaded <strong>${escH(f.name)}</strong>. New skills may have been added since you last
+        saved – please check the whole list, then click <strong>Save as CSV</strong> and upload it again.` +
+        (missing ? `<br>${missing} old answer(s) no longer match a line on the form and were skipped.` : ""), "ok");
+      window.scrollTo({ top: document.getElementById("form").offsetTop - 10, behavior: "smooth" });
+    } catch (err) {
+      showStatus("Could not load the file: " + escH(err.message) + ".", "err");
+    }
   });
 
   document.getElementById("printBtn").addEventListener("click", () => window.print());

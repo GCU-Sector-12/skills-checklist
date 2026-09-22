@@ -132,7 +132,6 @@
       <button id="clearBtn">Clear</button>
     </div>
 
-    <h2>Hard skills</h2>
     <div class="legend">
       <span><span class="chip c-can">I can do this</span></span>
       <span><span class="chip c-help">I need help with this</span></span>
@@ -140,10 +139,7 @@
       <span><span class="chip c-none">No answer</span></span>
       <span><span class="flag gap">GAP</span> nobody in the team can do it yet</span>
     </div>
-    <div class="tablewrap"><table id="hardTable"></table></div>
-
-    <h2>Soft skills</h2>
-    <div class="tablewrap"><table id="softTable"></table></div>
+    <div id="sectionTables"></div>
 
     <h2>In their own words</h2>
     <div class="tablewrap"><table class="people" id="peopleTable"></table></div>
@@ -153,6 +149,11 @@
 <script>
   const LEVELS = ["I can do this", "I need help with this", "I want to learn this"];
   const LEVEL_CLASS = ["c-can", "c-help", "c-learn"];
+  // Section order and titles (unknown sections from newer forms are added at the end)
+  const SECTION_TITLES = {
+    Hard: "Hard skills", Git: "Git and GitHub teamwork", Frontend: "Front end",
+    Frameworks: "Frameworks and tools", Soft: "Soft skills"
+  };
   const TEXT_COLS = ["Two things I am good at", "Two things I find hard", "What I want to take on in this project"];
 
   // people keyed by lower-case name, so a re-uploaded file replaces the old one
@@ -231,6 +232,17 @@
       names.map(n => `<span class="chip ${cls}">${esc(n)}</span>`).join("") + "</td>";
   }
 
+  function sectionKeys() {
+    const found = [];
+    for (const p of people.values())
+      for (const k of Object.keys(p)) {
+        const m = k.match(/^\[(\w+)\] /);
+        if (m && !found.includes(m[1])) found.push(m[1]);
+      }
+    const known = Object.keys(SECTION_TITLES).filter(k => found.includes(k));
+    return known.concat(found.filter(k => !known.includes(k)));
+  }
+
   function renderSection(section, tableId, filter) {
     const cols = skillColumns(section);
     let html = `<thead><tr><th>Skill</th>${LEVELS.map(l => `<th>${l}</th>`).join("")}<th>No answer</th></tr></thead><tbody>`;
@@ -257,11 +269,13 @@
     if (!has) return;
 
     const filter = document.getElementById("filter").value;
-    renderSection("Hard", "hardTable", filter);
-    renderSection("Soft", "softTable", filter);
+    const keys = sectionKeys();
+    document.getElementById("sectionTables").innerHTML = keys.map(k =>
+      `<h2>${esc(SECTION_TITLES[k] || k)}</h2><div class="tablewrap"><table id="t_${k}"></table></div>`).join("");
+    keys.forEach(k => renderSection(k, "t_" + k, filter));
 
     // tiles
-    const allCols = skillColumns("Hard").concat(skillColumns("Soft"));
+    const allCols = keys.flatMap(k => skillColumns(k));
     const gaps = allCols.filter(c => stats(c).names[0].length === 0).length;
     const helpNeeded = allCols.filter(c => stats(c).names[1].length > 0).length;
     const pairable = allCols.filter(c => { const s = stats(c); return s.names[0].length && s.names[1].length; }).length;
@@ -282,7 +296,7 @@
 
   // combined CSV: one row per person, all columns
   function exportCSV() {
-    const cols = ["Name", "Email", "Date", ...skillColumns("Hard"), ...skillColumns("Soft"), ...TEXT_COLS];
+    const cols = ["Name", "Email", "Date", ...sectionKeys().flatMap(k => skillColumns(k)), ...TEXT_COLS];
     const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
     const lines = [cols.map(q).join(",")];
     [...people.values()].sort((a, b) => a.Name.localeCompare(b.Name))
