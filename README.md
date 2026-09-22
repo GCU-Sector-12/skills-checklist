@@ -34,7 +34,16 @@ const TEAMS_URL = "";                        // optional link to the Teams Files
 To get the link: in Teams open the channel → **Files** → **Copy link** (or open the folder
 in SharePoint and copy the address).
 
-Skill lists: `HARD`, `SOFT`, `LEVELS`, `OTHER_ROWS` in the same script.
+Skill lists: `SECTIONS` in the same script – each section has a `key`, `title`, `skills` and
+number of `other` rows. Add or remove skills freely; don't rename a section `key` after people
+have submitted (it is part of the CSV column names). If you add a new section, also add its title
+to `SECTION_TITLES` in `summary.html`.
+
+## Updating answers
+
+On the form, **Load my CSV** fills the form from a previously saved file. The person changes what
+they need (including any newly added skills), clicks **Save as CSV** and uploads it to Teams again,
+choosing **Replace**. Older CSVs (before new sections were added) load fine – new lines are just blank.
 
 ## Deploy in the GitHub organisation
 
